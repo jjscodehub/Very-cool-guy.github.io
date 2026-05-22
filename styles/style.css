@@ -71,3 +71,15 @@ body:active {
         0%   { transform: perspective(600px) rotateY(0deg); }
         100% { transform: perspective(600px) rotateY(360deg); }
       }
+.kirky-img {
+    position: relative;
+    display: inline-block;
+    width: 8rem;
+    height: 8rem;
+}
+
+#kirky-container {
+    height: 45rem;
+    width: 45rem;
+    padding: 2rem;
+}
