@@ -6,12 +6,12 @@ html, body {
     min-height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
+    font-family: sans-serif;
 }
 
 header {
     padding: 2vh 0;
     border-radius: .75vh;
-
     background: linear-gradient(90deg,
     #E40303,
     #FF8C00,
@@ -29,7 +29,12 @@ header {
     background-size: 200%, 100%;
     animation:  moveGradient 5s linear infinite;
 
+    a{
+        margin-bottom:10px;
+    }
+
 }
+
 
 @keyframes moveGradient {
     from {
@@ -64,7 +69,8 @@ body {
     animation: prideWave 12s ease-in-out infinite;
     transition: transform 1s;
 }
-body:active {
+
+.barrelroll:active{
     transform: rotate(1turn);
     transition: none;
 }
