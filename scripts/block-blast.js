@@ -667,9 +667,10 @@
                         )
                         explosionParticles.push(particle)
                     }
-                } else if (this.type === 'mitosis') {
-                    ball.isDisabled = true;
-                } else {
+                } else { 
+                    if (this.type === 'mitosis') {
+                        ball.isDisabled = true;
+                    }
                     this.activateEffect(ball)
                 }
             }
