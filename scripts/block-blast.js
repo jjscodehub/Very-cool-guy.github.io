@@ -513,7 +513,6 @@
                     balls.push(piercingBall)
                     break
                 case 'mitosis':
-                    hittingBall.isDisabled = true;
                     // Duplicate the hitting ball's type and properties
                     if (hittingBall === undefined || hittingBall.type === 'projectile') {
                         break
@@ -668,9 +667,10 @@
                         )
                         explosionParticles.push(particle)
                     }
-                } else if (this.type === 'mitosis') {
-                    // ball.isDisabled = true;
-                } else {
+                } else { 
+                    if (this.type === 'mitosis') {
+                        ball.isDisabled = true;
+                    }
                     this.activateEffect(ball)
                 }
             }
