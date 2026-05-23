@@ -25,7 +25,7 @@
     const PADDLE_WIDTH = 12
     const PADDLE_HEIGHT_INITIAL = 120
     const PADDLE_SPEED = 420
-    const DIAMOND_PADDLE_INITIAL = 0
+    const INITIAL_DIAMOND_BONUS = 0
 
     /* --- BALL/PROJECTILE PROPERTIES --- */
     const BALL_RADIUS = 10
@@ -85,7 +85,7 @@
         isPaused = false
         document.getElementById('pauseBtn').textContent = 'Pause'
         paddle.h = PADDLE_HEIGHT_INITIAL
-        diamondPaddle.y = DIAMOND_PADDLE
+        diamondPaddle.h = paddle.h
         projectileTimer = 0
     }
 
@@ -213,7 +213,8 @@
         x: 30,
         y: (VIRTUAL_HEIGHT - PADDLE_HEIGHT_INITIAL) / 2,
         w: PADDLE_WIDTH,
-        h: DIAMOND_PADDLE_HEIGHT_INITIAL,
+        h: PADDLE_HEIGHT_INITIAL,
+        bonus: INITIAL_DIAMOND_BONUS,
         dy: 0, // Velocity in y-direction
     }
 
@@ -849,6 +850,8 @@
         paddle.y += paddle.dy * dt
         // Clamp paddle position within vertical bounds
         paddle.y = Math.max(0, Math.min(VIRTUAL_HEIGHT - paddle.h, paddle.y))
+        // Update diamond paddle
+        diamondPaddle.y = paddle.y
 
         // Update particles and remove expired ones
         for (let i = 0; i < brokenBlockParticles.length; i++) {
@@ -879,8 +882,45 @@
             }
             ball.update(dt)
 
+            
+            if(diamondPaddle.bonus > 0) {
+                // Diamond Paddle collision
+                if (rectCircleColliding(diamondPaddle, ball)) {
+                    // Calculate bounce angle based on relative hit position on the diamondPaddle
+                    const relativeY = (ball.y - (diamondPaddle.y + diamondPaddle.h / 2)) / (diamondPaddle.h / 2)
+                    const bounceAngle = relativeY * (Math.PI / 3) // Max angle of +/- 60 degrees
+    
+                    // Set velocity and reset state
+                    ball.vx = Math.cos(bounceAngle) * BALL_SPEED
+                    ball.vy = Math.sin(bounceAngle) * BALL_SPEED
+                    ball.x = diamondPaddle.x + diamondPaddle.w + ball.r + 0.1 // Reposition ball to prevent sticking
+                    ball.isDisabled = false
+                    ball.blocksHitCount = ball.type === 'piercing' ? 0 : Infinity // Reset block hit count
+    
+                    if (ball.type === 'projectile') {
+                        // Projectile hits diamondPaddle: diamondPaddle damage 
+                        diamondPaddle.bonus -= PROJECTILE_DAMAGE
+                        diamondPaddle.h = paddle.h + diamondPaddle.bonus
+                        balls.splice(i, 1)
+                        if (paddle.h <= 0) {
+                            livesLostCount++
+                            paddle.h = PADDLE_HEIGHT_INITIAL
+                            diamondPaddle.bonus = INITIAL_DIAMOND_BONUS
+                            paddle.y = (VIRTUAL_HEIGHT - PADDLE_HEIGHT_INITIAL) / 2
+                        }
+                        continue // Skip block collision check for this destroyed projectile
+                    }
+                    if (ball.type === 'diamond') {
+                        // Diamond hits paddle: paddle growth
+                        diamondPaddle.bonus += DIAMOND_DAMAGE
+                        diamondPaddle.h = paddle.h + diamondPaddle.bonus
+                        balls.splice(i, 1)
+                        continue // Skip block collision check for this destroyed diamond
+                    }
+                }
+            }
             // Paddle collision
-            if (rectCircleColliding(paddle, ball)) {
+            else if (rectCircleColliding(paddle, ball)) {
                 // Calculate bounce angle based on relative hit position on the paddle
                 const relativeY = (ball.y - (paddle.y + paddle.h / 2)) / (paddle.h / 2)
                 const bounceAngle = relativeY * (Math.PI / 3) // Max angle of +/- 60 degrees
@@ -905,7 +945,8 @@
                 }
                 if (ball.type === 'diamond') {
                     // Diamond hits paddle: paddle growth
-                    paddle.h += DIAMOND_DAMAGE
+                    diamondPaddle.bonus += DIAMOND_DAMAGE
+                    diamondPaddle.h = paddle.h + diamondPaddle.bonus
                     balls.splice(i, 1)
                     continue // Skip block collision check for this destroyed diamond
                 }
@@ -1042,6 +1083,10 @@
         for (const block of blocks) {
             block.display()
         }
+
+        // Diamond Paddle
+        if(diamondPaddle.bonus) //meant to appear under the main paddle
+            drawRoundRect(diamondPaddle.x, diamondPaddle.y, diamondPaddle.w, diamondPaddle.h, 6, '#32ddff')
 
         // Paddle
         drawRoundRect(paddle.x, paddle.y, paddle.w, paddle.h, 6, '#e6e6e6')
