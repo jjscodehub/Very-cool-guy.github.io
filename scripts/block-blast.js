@@ -231,7 +231,7 @@
 
         //update position and check if too old
         this.update = function(dt){
-            switch(direction){
+            switch(this.direction){
                 case "up":
                     this.y-=dt
                     break
@@ -245,21 +245,17 @@
                     this.x-=dt
                     break
             }
-            if(this.lifetime-- <= 0){//decrement lifetime and also check if I should go away~
+            if(this.lifetime-=dt <= 0){//decrement lifetime and also check if I should go away~
                 this.expired = true
             }
         }//end update
 
         this.display = function(){
             ctx.globalAlpha = (this.lifetime/this.LIFETIME) //Text fades out
-            ctx.fillStyle = this.color
             ctx.font = `${this.size}px system-ui, sans-serif`
+            ctx.fillStyle = this.color
             ctx.textAlign = 'center'
-            ctx.fillText(
-                this.text,
-                this.x,
-                this.y
-            )
+            ctx.fillText(this.text, this.x, this.y)
             ctx.globalAlpha = 1//don't wanna make everything else transparent
         }// end display
     }//please work I'm making this all in one go without testing
@@ -886,6 +882,9 @@
                 if (!isPaused && !isGameOver) {
                     updateGame(dt)
                 }
+                if (!isPaused) {
+                    updateText(dt)
+                }
                 drawGame()
                 break
         }
@@ -936,16 +935,6 @@
             particle.update(dt)
             if (particle.age >= particle.lifetime) {
                 explosionParticles.splice(i, 1)
-                i--
-            }
-        }
-
-        // Update flavor text and remove expired ones
-        for (let i = 0; i < floatyTexts.length; i++) {
-            const text = floatyTexts[i]
-            text.update(dt)
-            if (text.expired) {
-                floatyTexts.splice(i, 1)
                 i--
             }
         }
@@ -1135,6 +1124,18 @@
 
         if (livesLostCount >= MAX_LIVES) {
             isGameOver = true
+        }
+    }
+    //stop when paused, not when game over
+    function updateText(dt) {
+        // Update flavor text and remove expired ones
+        for (let i = 0; i < floatyTexts.length; i++) {
+            const text = floatyTexts[i]
+            text.update(dt)
+            if (text.expired) {
+                floatyTexts.splice(i, 1)
+                i--
+            }
         }
     }
 
