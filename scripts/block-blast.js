@@ -945,7 +945,7 @@
             const text = floatyTexts[i]
             text.update(dt)
             if (text.expired) {
-                text.splice(i, 1)
+                floatyTexts.splice(i, 1)
                 i--
             }
         }
